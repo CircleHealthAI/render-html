@@ -1,0 +1,12 @@
+{
+  "title": "Render HTML",
+  "subtitle": "Documentation & Guides",
+  "files": [
+    {
+      "file": "09-writing-effective-prompts.html",
+      "title": "Writing Effective Prompts",
+      "section": "Review Assistant",
+      "description": "How to structure Review Assistant prompts for clearer, more actionable audits."
+    }
+  ]
+}

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Render HTML</title>
+  <meta name="description" content="Documentation & guides" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-subtle: #f7f8fa;
+      --bg-sidebar: #fafbfc;
+      --border: #e6e8eb;
+      --text: #1a1a1a;
+      --text-muted: #5c6370;
+      --text-faint: #8a8f98;
+      --accent: #2f6feb;
+      --accent-soft: #eaf1ff;
+      --code-bg: #f3f4f6;
+      --table-stripe: #fafbfc;
+      --sidebar-width: 300px;
+      --header-height: 56px;
+      --content-max: 760px;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --bg-subtle: #161a21;
+        --bg-sidebar: #12151b;
+        --border: #252a33;
+        --text: #e6e8eb;
+        --text-muted: #a0a6b1;
+        --text-faint: #6b7280;
+        --accent: #6ea8ff;
+        --accent-soft: #1a2540;
+        --code-bg: #1a1f27;
+        --table-stripe: #15191f;
+        --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 0 24px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .search-wrap { padding: 12px 16px; }
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .nav-section {
+      padding: 8px 16px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+      margin-top: 8px;
+    }
+
+    .nav-list { list-style: none; margin: 0; padding: 0 8px; }
+
+    .nav-item a {
+      display: block;
+      padding: 7px 12px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 14px;
+      transition: background 0.12s, color 0.12s;
+      text-decoration: none;
+      line-height: 1.4;
+    }
+    .nav-item a:hover {
+      background: var(--bg-subtle);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-item.active a {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .nav-empty {
+      padding: 16px;
+      color: var(--text-faint);
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* Main content */
+    .main {
+      padding: 48px 64px 96px;
+      min-width: 0;
+    }
+
+    .content {
+      max-width: var(--content-max);
+      margin: 0 auto;
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      color: var(--text-faint);
+      margin-bottom: 8px;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .page-description {
+      font-size: 17px;
+      color: var(--text-muted);
+      margin: 0 0 32px;
+    }
+
+    .article {
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .article h1, .article h2, .article h3, .article h4 {
+      color: var(--text);
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+    }
+    .article h1 { font-size: 28px; }
+    .article h2 { font-size: 22px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .article h3 { font-size: 18px; }
+    .article h4 { font-size: 16px; }
+
+    .article p { margin: 0 0 1em; }
+
+    .article ul, .article ol { margin: 0 0 1em; padding-left: 1.5em; }
+    .article li { margin-bottom: 0.35em; }
+    .article li > p { margin-bottom: 0.35em; }
+
+    .article blockquote {
+      margin: 1.25em 0;
+      padding: 12px 18px;
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      color: var(--text);
+    }
+    .article blockquote p { margin: 0.25em 0; }
+    .article blockquote :first-child { margin-top: 0; }
+    .article blockquote :last-child { margin-bottom: 0; }
+
+    .article code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+    .article pre {
+      background: var(--code-bg);
+      padding: 16px;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .article pre code { background: transparent; padding: 0; }
+
+    .article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25em 0;
+      font-size: 14.5px;
+    }
+    .article th, .article td {
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .article th {
+      background: var(--bg-subtle);
+      font-weight: 600;
+    }
+    .article tbody tr:nth-child(even) { background: var(--table-stripe); }
+
+    .article hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 2em 0;
+    }
+
+    .article img {
+      max-width: 100%;
+      border-radius: var(--radius);
+    }
+
+    /* States */
+    .state {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--text-muted);
+    }
+    .state h2 {
+      font-size: 22px;
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+    .state p { margin: 0; font-size: 15px; }
+    .state code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Mobile */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 20;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      color: var(--text);
+    }
+    .menu-toggle svg { display: block; margin: auto; }
+
+    .backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 15;
+    }
+    .backdrop.show { display: block; }
+
+    @media (max-width: 840px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: 0; top: 0; bottom: 0;
+        width: 280px;
+        z-index: 18;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        height: 100vh;
+      }
+      .sidebar.open { transform: translateX(0); box-shadow: var(--shadow); }
+      .menu-toggle { display: flex; align-items: center; justify-content: center; }
+      .main { padding: 64px 20px 64px; }
+      .page-title { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </button>
+  <div class="backdrop" id="backdrop"></div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h1 class="sidebar-title" id="siteTitle">Render HTML</h1>
+        <p class="sidebar-subtitle" id="siteSubtitle">Documentation</p>
+      </div>
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="search" placeholder="Filter..." aria-label="Filter pages" />
+      </div>
+      <nav id="nav" aria-label="Pages"></nav>
+    </aside>
+
+    <main class="main">
+      <div class="content" id="content">
+        <div class="state">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const navEl = document.getElementById('nav');
+      const contentEl = document.getElementById('content');
+      const searchEl = document.getElementById('search');
+      const siteTitleEl = document.getElementById('siteTitle');
+      const siteSubtitleEl = document.getElementById('siteSubtitle');
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('backdrop');
+      const menuToggle = document.getElementById('menuToggle');
+
+      let manifest = null;
+      let currentFile = null;
+
+      function slugify(name) {
+        return name.replace(/\.html?$/i, '');
+      }
+
+      function prettifyTitle(filename) {
+        return filename
+          .replace(/\.html?$/i, '')
+          .replace(/^\d+[-_\s]*/, '')
+          .replace(/[-_]+/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      function setActive(file) {
+        document.querySelectorAll('.nav-item').forEach(li => {
+          li.classList.toggle('active', li.dataset.file === file);
+        });
+      }
+
+      function groupBySection(files) {
+        const groups = new Map();
+        for (const entry of files) {
+          const section = entry.section || '';
+          if (!groups.has(section)) groups.set(section, []);
+          groups.get(section).push(entry);
+        }
+        return groups;
+      }
+
+      function renderNav(filter = '') {
+        const q = filter.trim().toLowerCase();
+        navEl.innerHTML = '';
+        const filtered = manifest.files.filter(f => {
+          if (!q) return true;
+          return (
+            (f.title || '').toLowerCase().includes(q) ||
+            (f.file || '').toLowerCase().includes(q) ||
+            (f.section || '').toLowerCase().includes(q) ||
+            (f.description || '').toLowerCase().includes(q)
+          );
+        });
+
+        if (filtered.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'nav-empty';
+          empty.textContent = q ? 'No matches.' : 'No pages listed in files.json yet.';
+          navEl.appendChild(empty);
+          return;
+        }
+
+        const groups = groupBySection(filtered);
+        for (const [section, entries] of groups) {
+          if (section) {
+            const h = document.createElement('div');
+            h.className = 'nav-section';
+            h.textContent = section;
+            navEl.appendChild(h);
+          }
+          const ul = document.createElement('ul');
+          ul.className = 'nav-list';
+          for (const entry of entries) {
+            const li = document.createElement('li');
+            li.className = 'nav-item';
+            li.dataset.file = entry.file;
+            const a = document.createElement('a');
+            a.href = '#' + encodeURIComponent(slugify(entry.file));
+            a.textContent = entry.title || prettifyTitle(entry.file);
+            a.addEventListener('click', () => closeSidebar());
+            li.appendChild(a);
+            ul.appendChild(li);
+          }
+          navEl.appendChild(ul);
+        }
+        if (currentFile) setActive(currentFile);
+      }
+
+      function showState(html) {
+        contentEl.innerHTML = '<div class="state">' + html + '</div>';
+      }
+
+      async function loadPage(file) {
+        const entry = manifest.files.find(f => f.file === file);
+        if (!entry) {
+          showState(
+            '<h2>Not found</h2>' +
+            '<p>No entry for <code>' + escapeHtml(file) + '</code> in <code>files.json</code>.</p>'
+          );
+          document.title = manifest.title || 'Render HTML';
+          return;
+        }
+
+        currentFile = file;
+        setActive(file);
+        showState('<div class="spinner" aria-hidden="true"></div><p>Loading...</p>');
+
+        try {
+          const res = await fetch(entry.file, { cache: 'no-cache' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const text = await res.text();
+          const title = entry.title || prettifyTitle(entry.file);
+          document.title = title + ' · ' + (manifest.title || 'Render HTML');
+
+          contentEl.innerHTML = '';
+          if (entry.section) {
+            const crumb = document.createElement('div');
+            crumb.className = 'breadcrumb';
+            crumb.textContent = entry.section;
+            contentEl.appendChild(crumb);
+          }
+          const h1 = document.createElement('h1');
+          h1.className = 'page-title';
+          h1.textContent = title;
+          contentEl.appendChild(h1);
+          if (entry.description) {
+            const desc = document.createElement('p');
+            desc.className = 'page-description';
+            desc.textContent = entry.description;
+            contentEl.appendChild(desc);
+          }
+          const article = document.createElement('article');
+          article.className = 'article';
+          article.innerHTML = text;
+          contentEl.appendChild(article);
+
+          window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+        } catch (err) {
+          showState(
+            '<h2>Could not load page</h2>' +
+            '<p>Failed to fetch <code>' + escapeHtml(entry.file) + '</code>: ' + escapeHtml(err.message) + '</p>' +
+            '<p style="margin-top:8px;font-size:13px">If you are opening this from your filesystem, browsers block <code>fetch()</code> on <code>file://</code>. Run a local server or push to GitHub Pages.</p>'
+          );
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => (
+          { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+      }
+
+      function fileFromHash() {
+        const raw = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+        if (!raw) return null;
+        const match = manifest.files.find(f => slugify(f.file) === raw || f.file === raw);
+        return match ? match.file : null;
+      }
+
+      function onHashChange() {
+        if (!manifest) return;
+        const file = fileFromHash() || (manifest.files[0] && manifest.files[0].file);
+        if (file) loadPage(file);
+        else {
+          showState(
+            '<h2>No pages yet</h2>' +
+            '<p>Add an entry to <code>files.json</code> to see it here.</p>'
+          );
+        }
+      }
+
+      function openSidebar() { sidebar.classList.add('open'); backdrop.classList.add('show'); }
+      function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('show'); }
+      menuToggle.addEventListener('click', () => {
+        if (sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
+      });
+      backdrop.addEventListener('click', closeSidebar);
+
+      searchEl.addEventListener('input', e => renderNav(e.target.value));
+
+      async function init() {
+        try {
+          const res = await fetch('files.json', { cache: 'no-cache' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          manifest = await res.json();
+        } catch (err) {
+          showState(
+            '<h2>Could not load files.json</h2>' +
+            '<p>' + escapeHtml(err.message) + '</p>' +
+            '<p style="margin-top:8px;font-size:13px">Make sure <code>files.json</code> sits next to <code>index.html</code> and you are serving over HTTP (GitHub Pages or a local server).</p>'
+          );
+          return;
+        }
+
+        if (manifest.title) siteTitleEl.textContent = manifest.title;
+        if (manifest.subtitle) siteSubtitleEl.textContent = manifest.subtitle;
+        document.title = manifest.title || 'Render HTML';
+
+        renderNav();
+        window.addEventListener('hashchange', onHashChange);
+        onHashChange();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
