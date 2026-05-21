@@ -1,0 +1,161 @@
+<blockquote>
+  <p><strong>TL;DR.</strong> Write Review Assistant prompts like instructions for a careful auditor: structure around how your team already works, one concept per pass/fail question, name specific documents instead of using catch-alls, put scoping rules in the shared context, and test on charts where you already know the answer. The prompts get sharper with use &mdash; expect to revise after the first real run.</p>
+</blockquote>
+
+<h2>Start with the workflow</h2>
+
+<p>Structure your Review Assistants around how your team already audits charts. The core rule: same team plus same review timing can usually stay together. Different timing should usually be split.</p>
+
+<p>For example, admission checks, weekly checks, and discharge checks should usually be separate assistants because they run at different points in the patient&rsquo;s stay. This prevents early false failures (e.g. asking for a treatment plan one day after admission when it&rsquo;s not due until day 7) and keeps each review focused on what should be complete at that moment.</p>
+
+<h2>Write specific pass/fail questions</h2>
+
+<p>Most Review Assistant questions should be pass/fail with a clear yes-or-no answer.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Good</th>
+      <th>Avoid</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Was the BPS completed?</td>
+      <td>Is the BPS good?</td>
+    </tr>
+    <tr>
+      <td>Was the H&amp;P signed by the physician?</td>
+      <td>Are all admission documents complete, signed, and accurate?</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Broad questions make the assistant decide too much on its own. Specific questions produce clearer results and are easier for your team to act on.</p>
+
+<h2>One concept per question</h2>
+
+<p>If completion, signature, timing, and content quality all matter, split them into separate questions. Instead of:</p>
+
+<ul>
+  <li>Was the H&amp;P completed, signed, and filed within 24 hours?</li>
+</ul>
+
+<p>Use:</p>
+
+<ul>
+  <li>Was the H&amp;P completed?</li>
+  <li>Was the H&amp;P signed by the physician?</li>
+</ul>
+
+<p>When a chart fails, your team can see exactly what needs correction. Combined questions tell you something failed but not what.</p>
+
+<h2>Avoid catch-all questions</h2>
+
+<p>Questions like &ldquo;Are all required admission forms completed?&rdquo; force the assistant to first decide what counts as a required form, and different runs may interpret that differently. Instead, name the exact forms:</p>
+
+<ul>
+  <li>Was the Consent for Treatment completed?</li>
+  <li>Was the Financial Responsibility form completed?</li>
+  <li>Was the Release of Information completed?</li>
+</ul>
+
+<p>The result is more consistent and the failure points are actionable.</p>
+
+<h2>Put scoping rules in the shared context</h2>
+
+<p>Each assistant has a shared context block that applies to every question. Use it to define:</p>
+
+<ul>
+  <li>Which document names or form names to look for.</li>
+  <li>Known alternate names for the same document.</li>
+  <li>What &ldquo;complete&rdquo; means.</li>
+  <li>Whether signatures are required.</li>
+  <li>When a missing document should fail.</li>
+  <li>When a question should be marked not applicable.</li>
+  <li>Whether the assistant should evaluate one document or all matching documents.</li>
+</ul>
+
+<p>The questions stay clean and answerable. The context carries the extra instructions that help the assistant judge correctly.</p>
+
+<h2>Scope the assistant to the right document</h2>
+
+<p>If a question is about a specific form, the assistant should evaluate that form only &mdash; not borrow evidence from other documents. This matters most when multiple forms contain similar language (e.g. demographics appear on the face sheet, admission note, and intake form).</p>
+
+<p>A helpful context line:</p>
+
+<blockquote>
+  <p>When a question names a specific document, evaluate only that document type. Do not use information from other forms to answer the question unless the question explicitly asks for cross-document consistency.</p>
+</blockquote>
+
+<h2>Be clear about not applicable</h2>
+
+<p>Some requirements only apply to certain patients. A pregnancy test may only apply to female clients. A psychotropic medication consent may only apply when the patient is prescribed psychotropic medication.</p>
+
+<p>Put the condition in the question or the context:</p>
+
+<blockquote>
+  <p>If the patient is prescribed psychotropic medication, was the psychotropic medication consent completed?</p>
+</blockquote>
+
+<p>Also be explicit about when a missing document should fail rather than be marked N/A:</p>
+
+<blockquote>
+  <p>If the required document is not found, mark the question FAIL. Do not mark it not applicable.</p>
+</blockquote>
+
+<h2>Do not repeat trigger timing in every question</h2>
+
+<p>If the assistant runs 72 hours after admission, every question does not need to say &ldquo;within 72 hours of admission.&rdquo; The trigger already controls when the assistant runs.</p>
+
+<p>Use timing in the question only when the timing itself is what the assistant is judging, or when the assistant checks items with different due dates inside one run.</p>
+
+<h2>Pass/fail vs. summary</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Question type</th>
+      <th>When to use it</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>pass_fail</strong></td>
+      <td>Compliance judgments. The assistant should grade.</td>
+    </tr>
+    <tr>
+      <td><strong>summary</strong></td>
+      <td>Extraction. The assistant should pull information from the chart and present it back without grading it. Useful for gathering session dates, treatment-plan details, or UR notes for the chart reviewer.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Medical necessity needs extra guardrails</h2>
+
+<p>For utilization review and medical necessity prompts, the assistant should not overstate severity when the chart evidence is vague. Strong medical-necessity context should tell the assistant to:</p>
+
+<ul>
+  <li>Rate conservatively.</li>
+  <li>Use direct chart evidence.</li>
+  <li>Require objective scores when relevant (COWS, CIWA, PHQ-9, GAD-7).</li>
+  <li>Pay attention to timelines, e.g. last use date vs. assessment date.</li>
+  <li>Treat boilerplate or copied-forward language carefully.</li>
+  <li>Use direct quotes for important findings.</li>
+</ul>
+
+<h2>Testing and refinement</h2>
+
+<p>After configuring a Review Assistant, run it on a few charts where your team already knows the expected answers. Then compare Circle&rsquo;s results against the EMR.</p>
+
+<p>If the assistant gets something wrong, the fix is usually one of:</p>
+
+<ul>
+  <li>Make the question more specific.</li>
+  <li>Add document-name variants.</li>
+  <li>Clarify what counts as complete.</li>
+  <li>Add a not-applicable rule.</li>
+  <li>Add a document-scoping rule.</li>
+</ul>
+
+<p>Review Assistants improve fastest when the prompts are tested against real charts and refined based on specific misses &mdash; not based on hypothetical edge cases.</p>
