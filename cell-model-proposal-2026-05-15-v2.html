@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Compliance QA · Cell Model Proposal (v2)</title>
+<style>
+  :root {
+    --ink: #0f1f3a;
+    --muted: #5b6b85;
+    --rule: #e3e8ef;
+    --bg: #f7f8fb;
+    --card: #ffffff;
+    --accent: #2b6cb0;
+    --accent-soft: #eaf2fb;
+    --good: #2f855a;
+    --good-soft: #e6f4ec;
+    --warn: #b7791f;
+    --warn-soft: #fef5e7;
+    --risk: #c53030;
+    --risk-soft: #fdebec;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 48px 64px;
+  }
+
+  h1.title {
+    font-size: 26px;
+    margin: 0 0 6px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .meta strong { color: var(--ink); font-weight: 600; }
+
+  section.block {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 20px 26px;
+    margin-bottom: 14px;
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .block-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 3px 9px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+  }
+
+  h2.block-title {
+    font-size: 17px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  p { margin: 0 0 10px; }
+  p:last-child { margin-bottom: 0; }
+
+  .lede { font-size: 14.5px; color: var(--ink); }
+
+  .opener {
+    background: #fbfaf2;
+    border-left: 4px solid #b7791f;
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-size: 14.5px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  .opener p { margin-bottom: 10px; }
+  .opener p:last-child { margin-bottom: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13.5px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  td.num { white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+
+  ul.tight { margin: 4px 0 10px; padding-left: 20px; }
+  ul.tight li { padding: 2px 0; font-size: 14px; }
+  ul.tight li strong { font-weight: 600; }
+
+  ol.priority { margin: 6px 0 10px; padding-left: 22px; }
+  ol.priority li { padding: 6px 0; font-size: 14px; }
+  ol.priority li strong { font-weight: 600; }
+
+  .pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    vertical-align: middle;
+  }
+  .pill.good { background: var(--good-soft); color: var(--good); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.risk { background: var(--risk-soft); color: var(--risk); }
+
+  .pill.tier1 { background: var(--risk-soft); color: var(--risk); }
+  .pill.tier2 { background: var(--warn-soft); color: var(--warn); }
+
+  code {
+    background: #f1f3f7;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .mockup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 12px 0 4px;
+  }
+
+  .mockup {
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(15,31,58,0.04), 0 6px 18px rgba(15,31,58,0.05);
+    overflow: hidden;
+  }
+
+  .mockup-chrome {
+    background: #f3f5f9;
+    padding: 8px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--rule);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .mockup-body { padding: 12px 16px; font-size: 13px; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .field-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .field-row .key {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding-top: 2px;
+  }
+  .field-row .val { font-size: 13px; line-height: 1.45; }
+  .field-row .val .meta { color: var(--muted); font-size: 12px; }
+
+  .tag-chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-right: 5px;
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #eef1f6;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--rule);
+  }
+  .filter-chip.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: #c8dcef;
+  }
+
+  .status-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--rule);
+    font-size: 13px;
+  }
+  .status-cell:last-child { border-bottom: none; padding-bottom: 0; }
+  .status-cell .meta { color: var(--muted); font-size: 12px; font-weight: 400; }
+
+  @media print {
+    body { background: #fff; }
+    section.block { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1 class="title">Compliance QA · Cell Model Proposal (v2)</h1>
+  <div class="meta">
+    <strong>Working sketch · May 15, 2026</strong> · grounded in Bridget's SUD RTC Audit (RenewalHG) · Track 1 reordered to retire her weekly Word doc fastest · <strong>updated May 19, 2026</strong> with Track 2 (picklist parity)
+  </div>
+
+  <div class="opener">
+    <p>
+      Today's design feels wrong every time we look at it because it inherits from the
+      <strong>LLM evaluation paradigm</strong> (one prompt, one response, one row) rather than the
+      <strong>auditing paradigm</strong> (one ongoing question per patient with a current answer). Compliance is
+      fundamentally an auditing product, not a chatbot product.
+    </p>
+    <p>
+      The unit of state should become a <strong>compliance cell</strong>: one cell per patient per criteria per
+      compliance event (a deadline, a recurring period, or a discrete event like a new medication). AI runs become
+      append-only history that writes into cells rather than creating new rows on each fire.
+    </p>
+    <p>
+      <strong>Three paths.</strong> Seven near-term fixes (§06 Track 1) retire Bridget's weekly Word doc on the current
+      schema. <strong>Picklist parity</strong> (§06 Track 2, added 2026-05-19) layers a due-date picklist that mirrors
+      today's trigger picklist onto a flatter criteria model, capturing most of the cell rebuild's structural value
+      at roughly 10% of the engineering cost. The full cell-model rebuild (§06 Track 3) becomes the long-tail option
+      for when scale, multi-phase cadences, or materialized per-period storage force it.
+    </p>
+    <p style="background: #eaf2fb; border-left: 4px solid #2b6cb0; padding: 10px 14px; border-radius: 4px; font-size: 14px; margin-top: 12px;">
+      <strong>Decision (2026-05-19):</strong> Track 2 is the chosen structural path. Track 1 quality fixes ship in
+      parallel. Track 3 stays documented as a long-tail option but is not on the roadmap.
+    </p>
+  </div>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">01</span>
+      <h2 class="block-title">What only the cell model unlocks</h2>
+    </div>
+    <p style="font-size: 14px;">
+      Once Track 1 ships, the rebuild's unique justification narrows to two structural items. Everything else
+      Bridget and Nikali feel today (override loss, dashboard gaps, prompt mismatches, document-name fuzziness,
+      the weekly Word doc itself) is fixable on the current schema.
+    </p>
+    <ul class="tight">
+      <li><strong>Compliance expectation is structurally decoupled from how often AI checks.</strong> Today's trigger has to be both jobs at once: it decides when AI re-evaluates AND it implicitly defines what compliance expects. They are not the same thing, and conflating them is what produces the quietest bugs. A nightly trigger on a one-time question fires forever past the deadline. A weekly trigger that misses a fire silently equals a week of compliance unchecked. In the cell model, cadence on the criteria says what compliance expects; the sweep says when AI looks. Two layers, never coupled. You cannot retrofit this onto a model where the trigger does both jobs. See §02 for the config model.</li>
+      <li><strong>Unified period-aware ledger for action items and trend reporting.</strong> Showing historical runs in the dashboard (Track 1 item #5) gets you per-patient visibility. What it does not give you is metric aggregation. "Org-wide week-over-week pass rate on Weekly Psych Notes" needs an expected denominator (number of weeks × patients in LOC), and the flat run history has no expected count, only observed runs. Per-clinician scorecards, cohort trend lines, and "X% of admissions had H&amp;P on time this quarter" all live in the same period-aware ledger. Action items and trend reporting become two views over one data shape, not two separate pipelines.</li>
+    </ul>
+    <p style="font-size: 13px; color: var(--muted); margin-top: 10px; font-style: italic;">
+      Honesty update (2026-05-19): Track 2 (picklist parity) below closes most of both items without a cell rebuild.
+      Adding a due-date picklist to each criteria that mirrors the trigger picklist gets you the decoupling in item 1
+      directly. Trend reporting in item 2 becomes derivable at query time by walking each patient's timeline against
+      the due-date config and joining the existing run history. The remaining sliver that <em>only</em> the cell
+      rebuild closes is <strong>materialized per-period storage</strong>: a performance and migration consideration
+      at hundreds of facilities, not a capability one at today's scale.
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">02</span>
+      <h2 class="block-title">Cadence and sweeps (the cell-model config)</h2>
+    </div>
+    <p style="font-size: 14px;">
+      Each criteria carries two separate configs. Both live in the criteria editor.
+      <strong>Cadence creates cells. Sweep checks them.</strong>
+    </p>
+
+    <p style="font-size: 14px; margin-top: 12px;"><strong>Cadence</strong> is the compliance expectation: <em>anchor</em> + <em>interval</em>.</p>
+    <ul class="tight">
+      <li><strong>Anchor</strong> is the event that starts cell creation. Today's product allows three (admission, discharge, UR end), with two more in flight (facility admission, program start). The cell model adds event-typed anchors as a class: each new medication record, each status update, each clinical session note.</li>
+      <li><strong>Interval</strong> is how cells materialize. Three patterns: <em>once</em> (one cell per anchor), <em>every N days/weeks</em> (one cell per period while a condition holds), <em>per event</em> (one cell per new instance).</li>
+    </ul>
+
+    <table>
+      <thead>
+        <tr><th>Criteria</th><th>Anchor</th><th>Interval</th><th>Cells created</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>BPS within 72h of admission</td>
+          <td>Admission event</td>
+          <td>Once, deadline +72h</td>
+          <td>1 cell per stay</td>
+        </tr>
+        <tr>
+          <td>Weekly Individual Psychotherapy Note</td>
+          <td>Admission, rolling 7-day periods</td>
+          <td>Every 7 days while in PHP or RTC</td>
+          <td>1 cell per week of stay (Alice's 4-week PHP = 4 cells)</td>
+        </tr>
+        <tr>
+          <td>Psychotropic Authorization per new medication</td>
+          <td>Each new medication record</td>
+          <td>Per event</td>
+          <td>1 cell per new med record</td>
+        </tr>
+        <tr>
+          <td>Outcome Measure at 72h, every 14d, plus pre-DC</td>
+          <td>Admission (phases 1+2), DC event (phase 3)</td>
+          <td>Three-phase: 72h, every 14d during stay, retrospective 3d pre-DC</td>
+          <td>3 to 5 cells depending on length of stay</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size: 14px; margin-top: 14px;"><strong>Sweep</strong> declares when AI looks. Sweeps don't create cells, they update them. Two patterns can stack on one criteria:</p>
+    <ul class="tight">
+      <li><strong>Scheduled.</strong> Nightly, weekly, every N hours, on a specific day. Catches cells whose due dates moved without a clinical event firing.</li>
+      <li><strong>Event-driven.</strong> On document upload, on note signature, on Kipu form save, on demand. Catches cells whose evidence just changed, so the dashboard reflects new clinical work in near-real-time.</li>
+    </ul>
+    <p style="font-size: 14px;">
+      A criteria can carry both. "Nightly + on note upload" means status refreshes throughout the day as work
+      happens, with a daily catch-all so nothing rots.
+    </p>
+
+    <p style="font-size: 13.5px; color: var(--muted); margin-top: 12px;">
+      Why two configs and not one: today's trigger does both jobs and that conflation is what produces the silent bugs
+      (one-time questions refiring after the deadline, missed weekly periods going invisible, recurring schedules
+      drifting with trigger frequency). Two layers, never coupled, makes those bugs impossible. The cost is real
+      additional setup: per-criteria setup instead of assistant-level, and two configs per criteria instead of one.
+      See §03 for the tradeoff.
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">03</span>
+      <h2 class="block-title">What gets harder</h2>
+    </div>
+    <ul class="tight">
+      <li><strong>Setup moves to the criteria level, and each criteria carries two configs instead of one.</strong> Today "an assistant" stands up 30 to 50 questions in a single config artifact (one trigger, one prompt set, one dashboard). The cell model forces per-criteria setup, with both a cadence and a sweep schedule, plus scope, status enum, and prompt. More clicks per setup, meaningfully more sweeps to configure. A shared criteria library helps customer 2+ pick rather than author, but customer 1 of any new audit is real work.</li>
+      <li><strong>Dashboards become customizable, which means end-user setup becomes more important AND more work.</strong> Today the dashboard is whatever Circle hard-coded. Customizable filters and views mean users will not know what they're looking at without onboarding hand-holding. Expect materially more 1:1 setup time per customer and more "I don't see what I expected" support load.</li>
+      <li><strong>Tags become necessary.</strong> To group "everything Bridget cares about Monday morning" or "everything Billing needs before claim submission," criteria need user-defined tags. Tags need maintenance, governance, and customer conventions.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">04</span>
+      <h2 class="block-title">How is this different from Kipu?</h2>
+    </div>
+    <p style="font-size: 14px;">
+      "Cells" sounds like an EMR concept, so the question is worth addressing. <strong>Kipu is the system of record
+      for clinical facts; the cell model is the compliance interpretation over those facts.</strong> Different
+      layer, not a replacement. Cells read evidence from Kipu, they do not store the underlying notes.
+    </p>
+    <ul class="tight">
+      <li><strong>Kipu knows what happened. Cells know what was <em>supposed</em> to happen.</strong> If the clinician never wrote the H&amp;P, Kipu has no row for it; the absence is invisible. A <code>missing</code> cell makes that absence first-class.</li>
+      <li><strong>Kipu has no concept of compliance cadence.</strong> It records notes as written. It cannot say "this patient should have a weekly psych note for every 7 days in PHP." That's compliance policy, not EMR data.</li>
+      <li><strong>Kipu's form metadata isn't an audit ledger.</strong> It doesn't carry <code>late_signature</code> vs <code>unsigned</code> vs <code>pass</code>, doesn't reconcile against the admission timestamp, doesn't run cross-document consistency, doesn't track human overrides across reruns.</li>
+      <li><strong>Customer compliance policy varies; the EMR schema doesn't.</strong> Deadlines, required docs, and conditional rules differ by customer (and by state, payer, accreditation body). A criteria library normalizes the compliance side while reading evidence from each customer's specific Kipu schema.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">05</span>
+      <h2 class="block-title">What the new setup looks like</h2>
+    </div>
+    <p style="font-size: 13.5px; color: var(--muted);">
+      The criteria editor (left) is where setup happens. A saved dashboard view, "Bridget's Monday Triage" (right),
+      is where work happens. One criteria shown for illustration; a real customer has 50 to 100. The example below
+      is a recurring weekly criteria so the anchor, interval, and sweep rows do real work.
+    </p>
+
+    <div class="mockup-grid">
+      <div class="mockup">
+        <div class="mockup-chrome">Review Criteria · Edit</div>
+        <div class="mockup-body">
+          <div class="field-row">
+            <div class="key">Name</div>
+            <div class="val">Weekly individual psychotherapy note</div>
+          </div>
+          <div class="field-row">
+            <div class="key">Section</div>
+            <div class="val">Progress Notes</div>
+          </div>
+          <div class="field-row">
+            <div class="key">Anchor</div>
+            <div class="val">Admission event, rolling 7-day periods</div>
+          </div>
+          <div class="field-row">
+            <div class="key">Interval</div>
+            <div class="val">Every 7 days while patient is in PHP or RTC <span class="meta">(deadline: end of period)</span></div>
+          </div>
+          <div class="field-row">
+            <div class="key">Sweep</div>
+            <div class="val">Nightly + on new note upload</div>
+          </div>
+          <div class="field-row">
+            <div class="key">Scope</div>
+            <div class="val">SUD RTC + PHP patients</div>
+          </div>
+          <div class="field-row">
+            <div class="key">Status enum</div>
+            <div class="val"><span class="pill good">pass</span> <span class="pill warn">unsigned</span> <span class="pill warn">late_signature</span> <span class="pill risk">missing_note</span></div>
+          </div>
+          <div class="field-row">
+            <div class="key">Prompt</div>
+            <div class="val"><em>"Is there a signed Individual Psychotherapy Note for this patient covering this 7-day period?"</em> <span class="meta">(document name resolves via the shared dictionary)</span></div>
+          </div>
+          <div class="field-row">
+            <div class="key">Tags</div>
+            <div class="val"><span class="tag-chip">weekly</span><span class="tag-chip">bridget-priority</span><span class="tag-chip">clinical-progress</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mockup">
+        <div class="mockup-chrome">Review Dashboard · "Bridget's Monday Triage"</div>
+        <div class="mockup-body">
+          <div class="filter-bar">
+            <span class="filter-chip active">status: missing, late</span>
+            <span class="filter-chip active">tag: bridget-priority</span>
+            <span class="filter-chip active">period: this week</span>
+            <span class="filter-chip">group by patient</span>
+          </div>
+          <div class="status-cell">
+            <div><strong>Alice M</strong> · BPS <span class="meta">(due 5/13)</span></div>
+            <div><span class="pill risk">missing</span></div>
+          </div>
+          <div class="status-cell">
+            <div><strong>Alice M</strong> · Weekly Psych Note <span class="meta">(period 5/8 to 5/14)</span></div>
+            <div><span class="pill warn">unsigned</span></div>
+          </div>
+          <div class="status-cell">
+            <div><strong>Bob R</strong> · H&amp;P <span class="meta">(signed 5/15, due 5/14)</span></div>
+            <div><span class="pill warn">late_signature</span></div>
+          </div>
+          <div class="status-cell">
+            <div><strong>Bob R</strong> · Weekly Psych Note <span class="meta">(period 5/8 to 5/14)</span></div>
+            <div><span class="pill risk">missing_note</span></div>
+          </div>
+          <div class="status-cell">
+            <div><strong>Carmen L</strong> · Psychotropic Auth <span class="meta">(new med sertraline, 5/14)</span></div>
+            <div><span class="pill risk">missing</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size: 13px; color: var(--muted); margin-top: 12px;">
+      Same criteria, tags, and cells can power a separate "Billing Receipts" view, a "Quarterly Trend" rollup, or a
+      per-clinician scorecard. No duplicate config. Different filter, group, and tag choices over the same cell
+      table.
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">06</span>
+      <h2 class="block-title">Three-track path</h2>
+    </div>
+
+    <p style="font-size: 14px; margin-top: 4px;">
+      <strong>Track 1 (in flight or planned, current V2 schema).</strong> Seven near-term fixes. Item #1 (Last Run
+      flag) is deferred to Track 2 per the 2026-05-19 decision and shown below in muted form as a backup option.
+      Item #5c (recurring vs one-time display) is similarly deferred since Track 2's due-date picklist provides this
+      distinction natively. The remaining items ship in parallel with Track 2: items #2-#4 are the load-bearing tier;
+      the bottom three close the gap to Bridget's 75-80% time-savings bar.
+    </p>
+
+    <ol class="priority">
+      <li style="opacity: 0.6;">
+        <span class="pill" style="background: #eef1f6; color: #5b6b85;">deferred</span> &nbsp;
+        <strong>Status-override persistence tied to a new per-trigger "Last Run" flag.</strong>
+        <em style="color: #5b6b85;">Deferred to Track 2 (2026-05-19 decision). The three jobs this flag was doing
+        decompose cleanly: cost control via stop-firing &rarr; due-date config (DEV-2130); override lock-in &rarr;
+        per-period override behavior (DEV-2131); settled-vs-active distinction &rarr; the due_date_type field itself.
+        Chris's episode work covers post-discharge fan-out. Revive only if Track 2 stalls. Original reasoning kept
+        below.</em>
+        <br><br>
+        Triggers gain a Last Run setting: once an assistant has passed for a patient N times within the treatment
+        episode, the trigger stops firing for that patient AND any manual status overrides on those questions lock
+        in. On assistants without Last Run enabled (recurring weekly reviews), new runs overwrite as today so each
+        week's actual status shows. Naively fixing the V2 override-persistence bug without this gate creates the
+        opposite problem: a week-1 "pass" override sits on a weekly criteria forever and blocks future weeks from
+        being evaluated. Triggers are assistant-level, which is fine for RenewalHG's structure because consent
+        forms (Last Run on) and weekly progress notes (Last Run off) live in different assistants. Without this,
+        Bridget has no memory of "items I've already confirmed in Kipu" across weeks, and the Word doc is the only
+        place that memory lives.
+      </li>
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Calendar awareness for review LLM evaluations.</strong> Inject current date, day-of-week, and explicit
+        instructions for relative-time reasoning into the review LLM system prompt. Fixes a class of silent wrong
+        answers happening right now: Nikali's weekend exclusion rule (AI can't tell a Saturday note from a Monday
+        note), CodeMax + Bridget weekly recurring notes (AI hallucinates what "this past week" means and silently
+        passes weeks the note wasn't written), "on Tuesday check Monday-Friday of last week" (no anchored notion of
+        today). Sits above the Excel download because exporting wrong answers faster doesn't help Bridget; trustworthy
+        evaluations on day 1 do. <code>DEV-2136</code>; note that the form-fill-scoped predecessor <code>DEV-720</code>
+        was canceled 5/17, this is the review LLM surface, different code path.
+      </li>
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Downloadable Word/Excel report per facility per week.</strong> One document per facility, current
+        clients, all failed items since intake, with the AI's justification text per failure. Format = Word
+        (Bridget) or Excel filterable by assignee (Enea). Committed by Keshav on the 5/14 call. This is the literal
+        replacement for Bridget's manual Word doc plus Smartsheet workflow.
+      </li>
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Manual-status review criteria.</strong> A criteria type whose answer is human-entered, not
+        AI-evaluated. Bridget audits a meaningful share of items today that Circle cannot answer from the Kipu API
+        (facility compliance items, items in Google Drive, items requiring physical inspection). If the downloadable
+        report covers only the AI-answerable items, Bridget has to manually add the rest to it every week,
+        recreating the Word doc by hand. Manual-status criteria let her log those answers in Circle so the
+        downloaded report covers her full audit, not a fractured half of it.
+      </li>
+      <li>
+        <span class="pill tier2">tier 2</span> &nbsp;
+        <strong>Expanded response status enum.</strong> Move from binary pass/fail to a richer set
+        (<code>missing_note</code>, <code>unsigned</code>, <code>late_signature</code>,
+        <code>completed_not_timely</code>, <code>sent_to_clinician</code>, <code>N/A</code>, <code>manual_review</code>).
+        Bridget's Word doc carries this nuance by hand; the downloaded report needs to carry it natively. Three
+        customers same day on 5/14 asked for the same expansion (RenewalHG + NJ Living Room + Consult Pros).
+      </li>
+      <li>
+        <span class="pill tier2">tier 2</span> &nbsp;
+        <strong>Dashboard improvements.</strong> (a) Admitted-vs-discharged filter so "never audited" patients
+        surface. (b) Show historical runs alongside the latest run so Bridget can eyeball multi-week stragglers
+        ("Alice's TX plan failed week 1, still failing week 3"); ISO-week bucketing on current schema, period
+        bucketing swaps in when Track 2 lands. <span style="color: #5b6b85;">(c) <em>Deferred to Track 2:</em>
+        recurring-vs-one-time display is provided natively by the due-date picklist (DEV-2130), so building a
+        heuristic today (e.g., "does the trigger have intervalSeconds set?") is throwaway.</span> (d) Facility-column
+        filter that doesn't depend on LOC being set (engineering fix already in flight).
+      </li>
+      <li>
+        <span class="pill tier2">tier 2</span> &nbsp;
+        <strong>Document name and EMR field dictionary.</strong> Map EMR-specific document names to shared canonical
+        terms once (for example "Treatment plan," "ASAM"). The same dictionary also covers key EMR field references:
+        facility admission, level of care start date, utilization end date, discharge date, etc., mapped to the
+        correct fields in each customer's EMR. Criteria prompts use the canonical names; no per-criteria fuzzy-match
+        field. Same dictionary serves compliance review and form-fill. Quality fix that drives Bridget's false-positive
+        needs-review rate down and approaches her 75-80% time-savings bar. Not strictly blocking for Word-doc
+        retirement, but the most leveraged quality fix once the top three ship.
+      </li>
+    </ol>
+
+    <p style="font-size: 14px; margin-top: 18px;">
+      <strong>Track 2 (picklist parity, ~6 to 10 engineer-weeks).</strong> Added 2026-05-19. The insight: <strong>due
+      date should be a peer field on each criteria using the same picklist of options the trigger already supports</strong>
+      (72h after admission, weekly starting 7 days after admission, per new medication record, etc.). Trigger says
+      when AI looks; due date says when compliance expects. Same option shapes, two independent fields. Once you make
+      that move, most of what only the cell rebuild was supposed to unlock falls out at a fraction of the cost.
+    </p>
+
+    <ol class="priority">
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Criteria as the unit of state.</strong> Promote <code>audit_question</code> to a first-class
+        <code>criteria</code> row that can live without a parent <code>audit_template</code>. Existing templates keep
+        working as a saved view ("all criteria where <code>template_id = X</code>"); new criteria don't have to belong
+        to one. This is the smallest change that unlocks everything below.
+      </li>
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Due-date picklist on each criteria.</strong> Add a parallel block of fields that mirror the existing
+        trigger schema (<code>due_date_type</code>, <code>due_date_after_seconds</code>,
+        <code>due_date_interval_seconds</code>, <code>due_date_schedule</code> jsonb). Reuses every option the trigger
+        already supports. The v1 trigger scheduler is unchanged. The dashboard reads the new fields to compute "what
+        periods does this criteria cover for this patient, and which are currently due."
+      </li>
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Tags.</strong> User-defined many-to-many on criteria. Replaces "assistant name" as the grouping
+        primitive in dashboards. "Bridget's Monday Triage" becomes a saved filter on
+        <code>tag = bridget-priority</code>, not a hard-coded template.
+      </li>
+      <li>
+        <span class="pill tier1">tier 1</span> &nbsp;
+        <strong>Per-period status override table.</strong> Small new table keyed by (<code>patient_id</code>,
+        <code>criteria_id</code>, <code>period_start</code>). Where a manual "pass / N/A / late_signature" override
+        lives without contaminating the runs table. Resolves the V2 override-loss bug structurally and supersedes the
+        Last Run flag from Track 1 item #1.
+      </li>
+      <li>
+        <span class="pill tier2">tier 2</span> &nbsp;
+        <strong>Manual-status criteria.</strong> <code>is_manual</code> boolean on criteria. No AI run; status comes
+        from human input. Absorbs Track 1 item #3, which becomes a one-field change once criteria exist as a
+        first-class entity.
+      </li>
+      <li>
+        <span class="pill tier2">tier 2</span> &nbsp;
+        <strong>Bulk import.</strong> CSV-first (rows = criteria, columns = name, section, tags, due-date type, etc.)
+        with a secondary markdown-paste path for agentic authoring. Customer with 150 criteria onboards in an
+        afternoon, not a week.
+      </li>
+      <li>
+        <span class="pill tier2">tier 2</span> &nbsp;
+        <strong>Dashboard reads from criteria + due-date config + run history at query time.</strong> No materialized
+        cell table. For each patient + criteria, walk the timeline using the due-date picklist to derive expected
+        periods, join against the latest run in each period (or the override table), display. Trend reporting and
+        per-clinician scorecards work as additional views over the same query shape.
+      </li>
+    </ol>
+
+    <p style="font-size: 14px;">
+      <strong>What Track 2 unlocks.</strong> Decoupling of compliance expectation from AI check frequency (silent-bugs
+      class from §01 item 1). Expected denominator for trend reporting, derived at query time (§01 item 2, without a
+      physical cell table). Override persistence per period, not per run. Same flat-criteria + tags + saved-views
+      decomposition the Track 3 rebuild ends at.
+    </p>
+
+    <p style="font-size: 14px;">
+      <strong>What Track 2 deliberately leaves to Track 3.</strong> Multi-phase criteria like the Outcome Measure
+      (72h + every 14d + pre-DC) don't fit one due-date entry; workaround is to split into three sibling criteria
+      tagged <code>outcome-measure</code> and group by tag, which is acceptable for v1. No materialized cell table,
+      so reporting recomputes period membership at query time (fine at today's scale, starts to hurt at hundreds of
+      facilities). Append-only per-cell history is approximated by querying the existing runs table by period, which
+      is workable but less queryable than a real cells ledger.
+    </p>
+
+    <p style="font-size: 14px; margin-top: 18px;">
+      <strong>Track 3 (cell-model rebuild, ~6 to 12 engineer-months). Deferred per the 2026-05-19 decision.</strong>
+      Only justified if Track 2 hits its limits: multi-phase criteria become a top complaint, scale forces
+      materialized per-period storage, or a billing product needs a real append-only ledger. Rebuild around the cell
+      as the unit of state for the two things Track 1 fundamentally cannot do (and Track 2 only approximates):
+    </p>
+    <ol class="priority">
+      <li><strong>Structurally decouple compliance expectation from runtime check via two physical layers</strong> (cadence creates cells, sweep updates them) rather than two parallel picklists on one row. The class of silent bugs caused by the conflated trigger stops being possible by construction, not by convention.</li>
+      <li><strong>Materialized period-aware ledger for action items and trend reporting.</strong> One physical table with an expected denominator powers per-patient action queues, org-wide trend lines, per-clinician scorecards, and cohort comparisons without recomputing period membership on every query. Append-only history per cell becomes a first-class data shape, not a derived view.</li>
+    </ol>
+    <p style="font-size: 14px;">
+      Compliance also gets a true criteria library, assistants become saved views, triggers become a runtime concept
+      rather than a config concept, and the foundation is ready for billing products without a second rebuild.
+    </p>
+
+    <p style="font-size: 13.5px; color: var(--muted); margin-top: 14px;">
+      <strong>Engineering scope, Track 2 vs Track 3.</strong> Track 2 is mostly mechanical because the trigger
+      picklist it mirrors already exists in v2 (<code>chart_review_template_triggers</code> with <code>triggerType</code>,
+      <code>timeAfterTriggerSeconds</code>, <code>intervalSeconds</code>, <code>schedule</code> jsonb). The v1
+      scheduler runtime (<code>lib/integrations/chart-review/ready-triggers.ts</code>) needs no change. New code is
+      roughly: one criteria-table relationship change, one due-date-fields block, one overrides table, one tags M2M,
+      a CSV importer, and a dashboard query layer that joins criteria → runs → overrides through a derived-periods
+      CTE. Track 3 requires a new cells table, a cell-generator background job firing on both clinical events and
+      scheduled sweeps, a rewrite of the dashboard query layer to read from cells, a migration plan for existing run
+      data, retirement of the trigger table (since "trigger" becomes a runtime concept), and per-customer
+      reinterpretation of every existing review template setup. The gap is roughly 10x in engineering cost for the
+      last 10 to 15% of the unlock at today's scale.
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">07</span>
+      <h2 class="block-title">Combined priority across Track 1 and Track 2</h2>
+    </div>
+    <p style="font-size: 14px;">
+      Ordering ignores engineering effort. Pure value and leverage. Track 1 items ship in days to weeks;
+      Track 2 items ship in weeks to months. The bundle at #4 must ship together: criteria as the unit of state
+      is unusable in practice without tags (for grouping in the dashboard) and bulk import (for onboarding any
+      customer with more than ~20 criteria). <code>DEV-1937</code> is ranked above <code>DEV-2130</code> and
+      <code>DEV-2131</code> because the dictionary benefits every customer on every run from day one, while the
+      Track 2 architectural changes only deliver value once customers adopt the new criteria model. Reasonable to
+      flip <code>DEV-1937</code> and <code>DEV-2131</code> if you weight "Bridget's overrides are getting wiped
+      right now" higher than "every chart review run gets more accurate."
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Ticket</th>
+          <th>Item</th>
+          <th>Track</th>
+          <th>Why this rank</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td><code>DEV-2136</code></td>
+          <td>Calendar awareness for review LLM evaluations</td>
+          <td>1</td>
+          <td>Fixes weekend-exclusion hallucinations for Nikali; fixes weekly-note "last week vs this week" reasoning for Bridget and CodeMax. Every customer benefits immediately.</td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td><code>DEV-2133</code></td>
+          <td>Downloadable Word/Excel report per facility per week</td>
+          <td>1</td>
+          <td>Direct retirement of Bridget's manual Word doc. Unblocks the explicit business outcome the proposal was written around.</td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td><code>DEV-2128</code></td>
+          <td>Manual-status review criteria</td>
+          <td>2</td>
+          <td>Closes the last gap in Bridget's audit that automation can't reach today (criteria that need a human signoff but no AI evaluation). Without this, her Word doc can't fully retire because some rows have to stay manual outside the system.</td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td><code>DEV-2129</code> + <code>DEV-2134</code> + <code>DEV-2135</code></td>
+          <td>Foundation bundle: criteria as unit of state, criteria-level tags, bulk import</td>
+          <td>2</td>
+          <td>Must ship together. Criteria as the unit of state is unusable in practice without tags (for dashboard grouping) and bulk import (for onboarding any customer with more than ~20 criteria). Every Track 2 item below depends on this bundle.</td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td><code>DEV-1937</code></td>
+          <td>Document name and EMR field dictionary</td>
+          <td>1</td>
+          <td>Universal quality lift across all customers on day one. Drives Bridget's false-positive needs-review rate down toward her 75-80% time-savings bar. Independent of Track 2.</td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td><code>DEV-2130</code></td>
+          <td>Due-date picklist on each criteria</td>
+          <td>2</td>
+          <td>Decouples compliance expectation from AI check frequency. Silent bugs around one-time triggers re-firing and weekly misses going invisible stop happening. Depends on bundle #4.</td>
+        </tr>
+        <tr>
+          <td class="num">7</td>
+          <td><code>DEV-2131</code></td>
+          <td>Per-period status override table</td>
+          <td>2</td>
+          <td>Resolves the V2 override-loss bug structurally. Bridget stops losing manual overrides on re-evaluation. Depends on bundle #4 and on <code>DEV-2130</code> being live (the override scope depends on whether the criteria has a recurring due date).</td>
+        </tr>
+        <tr>
+          <td class="num">8</td>
+          <td><code>DEV-2132</code></td>
+          <td>Trend metrics count missing periods as fails</td>
+          <td>2</td>
+          <td>True period-aware trend reporting: pass-rate denominator becomes expected periods, not observed runs. Powers the exec-level dashboards Bridget can hand up to leadership. Depends on <code>DEV-2130</code>.</td>
+        </tr>
+        <tr>
+          <td class="num">9</td>
+          <td><code>DEV-2137</code></td>
+          <td>Expanded response status enum for review criteria</td>
+          <td>2</td>
+          <td>Status-semantics polish (manual-status, N/A, deferred, etc.) for the new criteria model. Highest leverage when paired with manual-status criteria in Track 2.</td>
+        </tr>
+        <tr>
+          <td class="num">10</td>
+          <td><code>DEV-2138</code></td>
+          <td>Show historical runs alongside latest in review dashboard</td>
+          <td>1</td>
+          <td>Multi-week stragglers become visible without scrolling through individual run histories. Ships now with ISO-week bucketing; period bucketing swaps in when Track 2 lands.</td>
+        </tr>
+        <tr>
+          <td class="num">11</td>
+          <td><code>DEV-2106</code></td>
+          <td>Show patients without a review run in the dashboard</td>
+          <td>1</td>
+          <td>Closes a visibility hole today (patients who never got a review run don't appear at all, so misses are invisible). Lower in the list because it's a narrower fix than the items above and partially overlaps with DEV-2132's "missing periods" denominator once Track 2 ships.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">08</span>
+      <h2 class="block-title">Grounding in Bridget's audit</h2>
+    </div>
+    <p style="font-size: 14px;">
+      Sanity-checked against Bridget's SUD RTC Audit at RenewalHG: <strong>74 distinct criteria across 17 sections</strong>
+      (Facesheet, Pre-Admission, Medical Intake, Clinical Assessments, Treatment Planning, Progress Notes, Discharge,
+      etc.). The cell model handles all 74. Most map directly. The rest fit a small set of recurring patterns:
+      dynamic form lists, chained conditionals (SI risk triggers Safety Plan + SI Reassessment), retrospective windows
+      (OM within 3 days of DC), per-event criteria (psychotropic auth per new med, signing per status update),
+      inverted predicates (family therapy unless declination), and detox-end gates on recurring weeklies.
+    </p>
+    <p style="font-size: 14px;">
+      Cell volume scales with length of stay. A 5-day AMA generates ~80 to 100 cells (some N/A from early discharge).
+      A 32-day RTC completion generates ~300 to 450 (more if PHP step-down pulls in daily group counts). Dashboards
+      aggregate by default. Cell count shows up as queryability, not as complexity for the user, assuming the view
+      is set up right.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>
