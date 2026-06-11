@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agenda — UR Script Feedback Review</title>
+<style>
+  :root{
+    --green:#1f9d6b;
+    --ink:#1a1f1d;
+    --muted:#5d6b65;
+    --line:#e2e8e4;
+    --bg:#f6f8f7;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:48px 28px 64px;}
+  header{margin-bottom:32px;}
+  .eyebrow{
+    color:var(--green);
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{font-size:32px;line-height:1.15;margin:0 0 14px;letter-spacing:-.02em;}
+  .meta{
+    font-size:15px;color:var(--muted);
+    border-left:3px solid var(--green);
+    padding:6px 0 6px 14px;
+    margin-top:16px;
+  }
+  .meta b{color:var(--ink);}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+    margin:14px 0;
+    box-shadow:0 1px 2px rgba(20,40,30,.04);
+  }
+  .card h2{
+    display:flex;align-items:center;gap:12px;
+    font-size:18px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em;
+  }
+  .num{
+    flex:0 0 auto;
+    width:26px;height:26px;border-radius:7px;
+    background:var(--green);color:#fff;
+    font-size:14px;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  ul{margin:10px 0 2px;padding-left:0;list-style:none;}
+  li{position:relative;padding:4px 0 4px 22px;font-size:15px;}
+  li::before{
+    content:"";position:absolute;left:4px;top:12px;
+    width:6px;height:6px;border-radius:50%;background:var(--green);
+  }
+  li ul{margin:3px 0 3px;}
+  li li{font-size:14px;color:var(--muted);}
+  li li::before{background:var(--line);}
+  .sub{color:var(--muted);font-size:14px;margin:2px 0 8px 38px;}
+  b,strong{font-weight:650;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Agenda</div>
+    <h1>UR Voicemail Script — Feedback Review</h1>
+    <div class="meta"><b>Topic:</b> Your UR specialist's feedback on the SUD voicemail script &middot; what we verified, what we rebuilt, and what we need from you</div>
+  </header>
+
+  <div class="card">
+    <h2><span class="num">1</span>We verified every issue against the charts</h2>
+    <ul>
+      <li>We took the feedback email and the three uploaded chart PDFs and checked each issue page by page.</li>
+      <li>Everything flagged checked out — the PAWS symptoms, the craving scale, and the medication refusal are all clearly documented in the chart and the review missed them.</li>
+      <li>The craving scale was actually documented in <b>three</b> places: the ASAM form, the nursing daily check-ins, and the doctor's note.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">2</span>We found the two root causes</h2>
+    <ul>
+      <li><b>Stale data:</b> the review built its picture almost entirely from the June 1 paperwork and ignored the June 4&ndash;5 notes — so it reported "minimal anxiety" when the patient rated it 9/10 three days later. The newer, more severe data is what actually supports medical necessity.</li>
+      <li><b>ASAM edition mismatch:</b> the facility charts on the new ASAM 4th edition, where "Dimension 4" means substance-use risks — that's where the PAWS checklist and craving scale live. The old script asked in 3rd-edition language, so the AI was looking under the wrong headings.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">3</span>What the rebuilt script does now</h2>
+    <ul>
+      <li>Follows the ASAM 4th edition exactly like your charts, section for section.</li>
+      <li>Dates every data point, always uses the newest note for current status, and shows trends across the week instead of one snapshot.</li>
+      <li>Reads as an actual word-for-word script, ending with the explicit ask: level of care, days requested, discharge date, step-down plan.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">4</span>Medication handling, fully reworked</h2>
+    <ul>
+      <li>PRNs listed separately with what each one is for.</li>
+      <li>Dose increases and decreases recognized (discontinued + restarted at a new strength).</li>
+      <li>Monthly injectables like Sublocade counted as active MAT even when the order shows "expired."</li>
+      <li>Correct anti-craving definitions — no more labeling Seroquel or Vistaril as anti-craving meds.</li>
+      <li>Refusals reported front and center — a documented refusal actually strengthens the case for 24-hour care.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">5</span>The payer-specific detail you asked for</h2>
+    <ul>
+      <li>Named triggers, named coping skills — specifics, not generalities.</li>
+      <li>Your a-through-f coping-skills independence scale, word for word, with the supporting evidence.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">6</span>Your "ask me when something's off" idea</h2>
+    <ul>
+      <li>Every script now ends with a <b>"Discrepancies &amp; Questions for UR Review"</b> section just for you — not read to the payer.</li>
+      <li>It lists chart contradictions, missing info (SI/HI updates, sleep, appetite), and odd values to verify before you dial.</li>
+      <li>Example from this chart: "age 6" for first alcohol use is genuinely in the chart — that's a verify-with-clinical flag, not an AI error.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">7</span>What we need from you</h2>
+    <ul>
+      <li><b>Include the MAR in uploads.</b> The current med-list export shows order dates only, so "active PRNs in the last 48 hours" can't be computed without the administration record.</li>
+      <li><b>Payer check:</b> would any of your payers push back on 4th-edition framing? If so, we'll clone a 3rd-edition variant rather than water this one down.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">8</span>Next step</h2>
+    <ul>
+      <li>We re-run the same test chart through the new version and send you the before/after.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
