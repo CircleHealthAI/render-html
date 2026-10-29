@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Utilization page stress test: CodeMax - Lumina (2026-10-29)</title>
+<style>
+  body { font-family: Inter, -apple-system, Segoe UI, sans-serif; color: #1f2933; max-width: 960px; margin: 32px auto; padding: 0 24px; line-height: 1.5; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  h2 { font-size: 18px; margin-top: 32px; border-bottom: 2px solid #08A078; padding-bottom: 4px; }
+  h3 { font-size: 16px; margin: 0 0 8px; }
+  .sub { color: #52606d; margin-top: 0; font-size: 14px; }
+  .verdict { background: #f0faf6; border-left: 4px solid #08A078; padding: 10px 16px; margin: 18px 0; }
+  .card { border: 1px solid #d9e2ec; border-radius: 8px; padding: 14px 18px; margin: 14px 0; }
+  .card p { margin: 6px 0; }
+  .sev { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+  .high { background: #fde8e8; color: #b42318; }
+  .med { background: #fef3e2; color: #b54708; }
+  .low { background: #eef2f6; color: #52606d; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 14px; }
+  th, td { border: 1px solid #d9e2ec; padding: 5px 9px; text-align: left; }
+  th { background: #f5f7fa; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  code { background: #f5f7fa; padding: 1px 4px; border-radius: 3px; font-size: 13px; }
+  .small { font-size: 13px; color: #52606d; }
+</style>
+</head>
+<body>
+
+<h1>Utilization page stress test: CodeMax - Lumina</h1>
+<p class="sub">Org 38, October 2026, read-only, 2026-10-29. Code: circle-v2 <code>82ebb7f5d</code>.</p>
+
+<div class="verdict">
+  <strong>The arithmetic is correct. Six rules count the wrong things.</strong> Index, facility pages, export and range splits all agree. An independent recount from raw Kipu notes (<code>listForPatient</code>) matched 1,281 of 1,284 patient rows. The other 3 were notes synced after the last summary refresh.
+</div>
+
+<div class="card">
+<h3><span class="sev high">HIGH</span>1. Individual Encounters counts every billable Kipu evaluation</h3>
+<p><strong>Evidence:</strong> 30,409 of 60,800 documented services are individual encounters. Only 5,682 have a session time. By title, 8,046 are nurse notes and 12,322 are scales, screens or admin forms (GAD-7, PHQ-9, CIWA, problem list, drug screen consent, belongings search, incident report). Uprise Treatment Center: 98 per patient in 29 days.</p>
+<p><strong>Cause:</strong> <code>kipuIndividualEncounterRowPredicate</code> accepts any evaluation with <code>billable = true</code>. CodeMax turns that toggle on for nursing and admin forms. <code>billing_codes</code> is empty on every form, including therapy notes.</p>
+<p><strong>Fix:</strong> Require the <code>evaluation_start_and_end_time</code> item (see <code>recordsKipuEvaluationEnd</code>). In a 60-document sample it separated every session note from the rest. Add a Dictionary override for the exceptions (one PHQ-9 form has start/end, one therapy note form does not). Result: about 36,100 services instead of 60,800.</p>
+</div>
+
+<div class="card">
+<h3><span class="sev high">HIGH</span>2. Auth days wrong on 364 of 1,088 rows</h3>
+<p><strong>Evidence:</strong> Production sums every review at the latest level of care, whatever its status. 142 "Not Required" rows show 6,034 days, and 172 rows with only a "New" request show 4,030.</p>
+<p><strong>Fix:</strong> <a href="https://github.com/CircleHealthAI/circlehealth/pull/2442">#2442</a> (DEV-3476), merged 11:04 AM ET. It was not deployed at 11:40 AM. Recheck after the deploy.</p>
+</div>
+
+<div class="card">
+<h3><span class="sev med">MEDIUM</span>3. False overlaps at the 4 Eastern facilities</h3>
+<table>
+  <tr><th>Facility</th><th>Shown</th><th>On the Pacific clock</th></tr>
+  <tr><td>Serene Recovery</td><td class="num">32</td><td class="num">6</td></tr>
+  <tr><td>Singer Island Health</td><td class="num">161</td><td class="num">96</td></tr>
+  <tr><td>Fort Lee Recovery Center</td><td class="num">12</td><td class="num">8</td></tr>
+  <tr><td>Crystal Lake Healing</td><td class="num">142</td><td class="num">137</td></tr>
+</table>
+<p><strong>Cause:</strong> Kipu form times have no zone and use the Pacific account clock. Circle reads them in the facility zone (<code>_integrations/Kipu.md</code> #23). Group times carry an offset and are correct. Example at Serene: an evaluation typed as 2:56 PM is read as 2:56 PM ET and overlaps a 3:00 to 5:00 PM ET group. The note was really at 5:56 PM ET.</p>
+<p><strong>Fix:</strong> Read typed times in the offset of the document's <code>created_at</code>. Then run <code>backfill-utilization-services.ts</code>, because <code>utilization_services</code> stores start times at sync time.</p>
+</div>
+
+<div class="card">
+<h3><span class="sev med">MEDIUM</span>4. The program filter counts services twice</h3>
+<p><strong>Evidence:</strong> The Singer Island program views sum to 94 more services than "All programs" (Clean Treatment +69). One patient has 73 services under Detox and 70 under Residential 2.</p>
+<p><strong>Cause:</strong> <code>serviceHeldInProgramPredicate</code> accepts a stay from any of the patient's episodes. The patient's earlier episode has a Detox stay that started 9/25 and has no end date.</p>
+<p><strong>Fix:</strong> Match on <code>program_stays.treatment_episode_id = utilization_services.treatment_episode_id</code>. End an open stay at the next stay's start or at discharge.</p>
+</div>
+
+<div class="card">
+<h3><span class="sev med">MEDIUM</span>5. Stale facilities show 0</h3>
+<p>29 facilities show 0 services for 201 active patients. Their last Kipu sync was June to September (for example, ABC Wellness IOP: 19 active, last sync 9/10). <strong>Fix:</strong> show "No data since &lt;date&gt;" instead of 0.</p>
+</div>
+
+<div class="card">
+<h3><span class="sev low">LOW</span>6. Export hours do not add up to the page total</h3>
+<p>Rows are rounded before export, so NoHo's rows sum to 5,203.6 h against 5,202.0 h on the page. Export minutes, or label the rounding.</p>
+</div>
+
+<p class="small">Not bugs: service-type day rows sum to more than the total (one day can hold both types), and the sync lag is about 15 minutes. Limits: the reference data is Circle's synced copy of Kipu, and auth "used" days were not rebuilt independently. Reads used: <code>utilization.listFacilities</code>, <code>orgLedger</code>, <code>facilityLedger</code>, <code>listForPatient</code>, <code>episodeAuthorizations</code>, <code>patientCharts.getById</code>, <code>programStays.listForPatient</code>.</p>
+
+</body>
+</html>
